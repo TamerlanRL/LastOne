@@ -1,0 +1,83 @@
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include <vector>
+#include <cstdlib>
+#include <string>
+#include <algorithm>
+using namespace std;
+const string fileName = "words.txt"; // Имя файла со списком слов
+string getRandomWord() {
+    ifstream file(fileName); // Открываем файл со списком слов
+    vector<string> words;
+    // Считываем слова из файла
+    string word;
+    while (file >> word) {
+
+        words.push_back(word);
+
+    }
+    // Выбираем случайное слово из списка
+    srand(time(nullptr));
+    int index = rand() % words.size();
+    return words[index];
+
+}
+string encryptWord(const string& word) {
+    string encrypted = word;
+    replace_if(encrypted.begin(), encrypted.end(), [](char c) { return isalpha(c); }, '*');
+    return encrypted;
+}
+
+bool isGameOver(const string& guessedWord, const string& targetWord) {
+    return guessedWord == targetWord;
+}
+
+void printStatistics(const string& targetWord, const string& guessedLetters, int attempts, time_t startTime) {
+    cout << "Game Over!" << endl;
+    cout << "Statistics:" << endl;
+    time_t endTime = time(nullptr);
+    int elapsedTime = endTime - startTime;
+    cout << "Elapsed Time: " << elapsedTime << " seconds" << endl;
+    // Выводим количество попыток
+    cout << "Attempts: " << attempts << endl;
+    // Выводим искомое слово и угаданные буквы
+    cout << "Target Word: " << targetWord << endl;
+    cout << "Guessed Letters: " << guessedLetters << endl;
+}
+
+int main() {
+    string targetWord = getRandomWord(); // Получаем случайное слово
+    string guessedWord = encryptWord(targetWord); // Шифруем слово
+    string guessedLetters; // Угаданные буквы
+    int attempts = 0; // Количество попыток
+    time_t startTime = time(nullptr); // Время начала игры
+
+
+    while (!isGameOver(guessedWord, targetWord)) {
+        cout << "Guessed Word: " << guessedWord << endl;
+        char guess;
+        cout << "Enter a letter: ";
+        cin >> guess;
+
+        if (guessedLetters.find(guess) != string::npos) {
+            cout << "You have already guessed this letter" << endl;
+            continue;
+        }
+
+        if (targetWord.find(guess) != string::npos) {
+            for (int i = 0; i < targetWord.length(); i++) {
+                if (targetWord[i] == guess) {
+                    guessedWord[i] = guess;
+                }
+            }
+        }
+        else {
+            cout << "Wrong letter" << endl;
+            attempts++;
+        }
+        guessedLetters += guess;
+    }
+    printStatistics(targetWord, guessedLetters, attempts, startTime);
+    return 0;
+}
